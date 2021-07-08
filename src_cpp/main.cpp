@@ -1,3 +1,12 @@
+/*
+Chiara Guizzaro
+id number: 2019293
+Computer vision project, boat detection, a.a. 2020-21
+University of Padua
+
+Boats detection
+*/
+
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -5,6 +14,7 @@
 #include <opencv2/core/utils/filesystem.hpp>
 
 #include "utils/region_proposal.h"
+#include "utils/classifier.h"
 
 int main(int argc, char** argv)
 {
@@ -16,6 +26,7 @@ int main(int argc, char** argv)
     cv::Mat image = cv::imread(path);
     cv::imshow("Input image", image);
 
+    /*
     // Region proposal
     RegionProposal rp;
     std::vector<cv::Scalar> boxes = rp.process(image, mode);
@@ -30,7 +41,7 @@ int main(int argc, char** argv)
 
     // Show Bounding boxes
     cv::imshow("Boxes", image);
-    
+    */
     
 
     cv::waitKey(0);

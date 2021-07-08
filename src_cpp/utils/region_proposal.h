@@ -34,7 +34,7 @@ public:
 	// 	                                           "Selective_search_quality", "Selective_search_fast"
 	// 	   cv::Mat edges                           matrix grayscale [0,1] float, edges (used only for "EdgeBoxes_custom")
 	// Returns:
-	//     std::vector<cv::Scalar> boxes              regions proposal
+	//     std::vector<cv::Scalar> boxes           regions proposal
 	std::vector<cv::Scalar> process(cv::Mat img, std::string mode = "EdgeBoxes", cv::Mat edges = cv::Mat());
 
 private:
