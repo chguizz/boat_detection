@@ -39,7 +39,7 @@ public:
 
 private:
 	// Changing from notation (x, y, w, h) to (tl_x, tl_y, br_x, br_y)
-	// top left corner coordinatesand
+	// top left corner coordinates and
 	// bottom right coordinates
 	// ---------------
 	// Parameters:

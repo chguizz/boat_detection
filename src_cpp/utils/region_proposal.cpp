@@ -33,8 +33,9 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode, c
 		edge_detection->computeOrientation(edges, orimap);
 
 		// Edge Boxes
+		const int MAX_NUM_PROPOSES = 30;
 		cv::Ptr< cv::ximgproc::EdgeBoxes > edge_boxes = cv::ximgproc::createEdgeBoxes();
-		edge_boxes->setMaxBoxes(30);
+		edge_boxes->setMaxBoxes(MAX_NUM_PROPOSES);
 		edge_boxes->getBoundingBoxes(edges, orimap, rects);
 
 		return changing_coordinates(rects);
@@ -46,15 +47,15 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode, c
 		// Edges detection
 		cv::Ptr<cv::ximgproc::StructuredEdgeDetection> edge_detection =
 			cv::ximgproc::createStructuredEdgeDetection(model);
-		edge_detection->detectEdges(img, custom_edges);
 
 		// Computation of orientation from edge map
 		cv::Mat orimap;
 		edge_detection->computeOrientation(custom_edges, orimap);
 
 		// Edge Boxes
+		const int MAX_NUM_PROPOSES = 30;
 		cv::Ptr< cv::ximgproc::EdgeBoxes > edge_boxes = cv::ximgproc::createEdgeBoxes();
-		edge_boxes->setMaxBoxes(30);
+		edge_boxes->setMaxBoxes(MAX_NUM_PROPOSES);
 		edge_boxes->getBoundingBoxes(custom_edges, orimap, rects);
 
 		return changing_coordinates(rects);
@@ -85,6 +86,7 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode, c
 	}
 	else {
 		std::cout << "Error in the choice of the algorithm for regional proposal." << std::endl;
+		exit(-1);
 	}
 }
 
