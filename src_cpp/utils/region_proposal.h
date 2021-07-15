@@ -30,12 +30,11 @@ public:
 	// Parameters:
 	// 	   cv::Mat img                             image to process
 	// 	   std::string mode                        algorithm to use
-	// 	                                           posssible choices are "EdgeBoxes" (default), "EdgeBoxes_custom", 
-	// 	                                           "Selective_search_quality", "Selective_search_fast"
-	// 	   cv::Mat edges                           matrix grayscale [0,1] float, edges (used only for "EdgeBoxes_custom")
+	// 	                                           posssible choices are 
+	// 	                                           "Selective_search_quality", "Selective_search_fast" (default)
 	// Returns:
 	//     std::vector<cv::Scalar> boxes           regions proposal
-	std::vector<cv::Scalar> process(cv::Mat img, std::string mode = "EdgeBoxes", cv::Mat edges = cv::Mat());
+	std::vector<cv::Scalar> process(cv::Mat img, std::string mode = "Selective_search_fast");
 
 private:
 	// Changing from notation (x, y, w, h) to (tl_x, tl_y, br_x, br_y)

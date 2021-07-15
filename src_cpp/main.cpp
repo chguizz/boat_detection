@@ -17,18 +17,19 @@ Boats detection
 
 int main(int argc, char** argv)
 {
-
     std::string path = argv[1];
 
     // Input image
-    cv::Mat image = cv::imread(path);
-
-
-    BoatDetector bd;
-    bd.load_ground_truth("C:\\Users\\guizz\\Desktop\\boat_detection\\dataset\\FINAL_DATASET\\TEST_DATASET\\venice_labels_txt\\11.txt");
-
+    cv::Mat img = cv::imread(path);
 
     
+    // Boats detection algorithm
+    BoatDetector bd;
+    bd.set_image(img);
+    cv::Mat result = bd.process();
+
+    cv::namedWindow("Final result", cv::WINDOW_FREERATIO);
+    cv::imshow("Final result", result);
     
 
     cv::waitKey(0);

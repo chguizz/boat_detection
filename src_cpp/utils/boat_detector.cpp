@@ -10,7 +10,7 @@ Boat detector class
 #include "boat_detector.h"
 
 BoatDetector::BoatDetector() {
-	// Intentionaly black
+	// Intentionally blanck
 }
 
 void BoatDetector::set_image(cv::Mat image) {
@@ -101,7 +101,7 @@ cv::Mat BoatDetector::patch(cv::Mat image, cv::Scalar box, bool resize, cv::Size
 	int xb = box[2];
 	int yb = box[3];
 
-	cv::Mat result = image(cv::Range(xa, xb + 1), cv::Range(ya, yb + 1));
+	cv::Mat result = image(cv::Range(ya, yb), cv::Range(xa, xb));
 
 	// Bilinear Interpolation
 	if (resize) cv::resize(result, result, sz);
@@ -109,12 +109,79 @@ cv::Mat BoatDetector::patch(cv::Mat image, cv::Scalar box, bool resize, cv::Size
 	return result;
 }
 
-void draw_box(cv::Mat image, cv::Scalar box, cv::Scalar color, std::string text) {
-	int thickness = 1;
-	cv::rectangle(image, cv::Point(box[0], box[1]), cv::Point(box[2], box[3]), color, thickness);
+void BoatDetector::draw_box(cv::Mat image, cv::Rect box, cv::Scalar color, std::string text) {
+	int thickness = 2;
+	cv::rectangle(image, box, color, thickness);
 	thickness = 2;
-	cv::putText(image, text, cv::Point(box[0], box[1] - 10), cv::FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), thickness);
-	int baseline = 0;
-	cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.9, thickness, &baseline);
-	cv::rectangle(image, cv::Point(box[0], box[1]), cv::Point(box[2], box[3]), color, -1);
+	int x = box.x;
+	int y = box.y;
+	if (y - 10 < 0) y = box.y + box.height - 10;
+	cv::putText(image, text, cv::Point(x, y), cv::FONT_HERSHEY_SIMPLEX, 0.5, color, thickness);
+}
+
+void BoatDetector::SBS(std::vector<cv::Rect> boxes, std::vector<float> scores, 
+	std::vector<cv::Rect> &new_boxes, std::vector<float> &new_scores) {
+
+	// Area of each box
+	std::vector<float> areas;
+	for (int i = 0; i < boxes.size(); i++) {
+		cv::Rect b = boxes.at(i);
+		areas.push_back(b.height * b.width);
+	}
+		
+	while (boxes.size() != 0) {
+		int m = argmax(areas);
+		cv::Rect M = boxes.at(m);
+
+		new_boxes.push_back(M);
+		boxes.erase(boxes.begin() + m);
+
+		new_scores.push_back(scores.at(m));
+		scores.erase(scores.begin() + m);
+		areas.erase(areas.begin() + m);
+
+		std::vector<cv::Rect> temp_boxes;
+		std::vector<float> temp_scores, temp_areas;
+		for (int i = 0; i < boxes.size(); i++) {
+			if (!inside(M, boxes.at(i))) {
+				temp_boxes.push_back(boxes.at(i));
+				temp_scores.push_back(scores.at(i));
+				temp_areas.push_back(areas.at(i));
+			}
+		}
+		boxes = temp_boxes;
+		scores = temp_scores;
+		areas = temp_areas;
+
+	}
+}
+
+int BoatDetector::argmax(std::vector<float> A) {
+	int m = 0;
+	float max = A.at(m);
+
+	for (int i = 0; i < A.size(); i++) {
+		if (A.at(i) > max) {
+			m = i;
+			max = A.at(m);
+		}
+	}
+
+	return m;
+}
+
+bool BoatDetector::inside(cv::Rect boxA, cv::Rect boxB) {
+	// box A is the LARGE BOX
+	// box B is the SMALLER BOX, eventually inside box A
+
+	bool first_condition = (boxB.x > boxA.x) && (boxB.y > boxA.y) 
+		&& (boxB.x + boxB.width < boxA.x + boxA.width) && (boxB.y + boxB.height < boxA.y + boxA.height);
+
+	bool second_condition = (boxB.x >= boxA.x) && (boxB.y >= boxA.y)
+		&& (boxB.x + boxB.width < boxA.x + boxA.width) && (boxB.y + boxB.height < boxA.y + boxA.height);
+
+	bool third_condition = (boxB.x > boxA.x) && (boxB.y > boxA.y)
+		&& (boxB.x + boxB.width <= boxA.x + boxA.width) && (boxB.y + boxB.height <= boxA.y + boxA.height);
+
+	return first_condition || second_condition || third_condition;
 }

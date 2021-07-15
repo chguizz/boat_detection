@@ -10,6 +10,7 @@ add_executable (${PROJECT_NAME}  "main.cpp"
                                  "utils/boat_detector.h" "utils/boat_detector.cpp" 
                                  "utils/boat_detector_process.cpp")
 
-file(COPY "utils/model.yml.gz"   DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY "../src_python/frozen_graph.pb"
+          DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS} )

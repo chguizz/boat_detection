@@ -13,58 +13,22 @@ RegionProposal::RegionProposal() {
 	// intentionaly blank
 }
 
-std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode, cv::Mat custom_edges) {
-	// EdgeBoxes requires a model: 
-    // https://github.com/opencv/opencv_extra/blob/master/testdata/cv/ximgproc/model.yml.gz
+std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode) {
 
-	if (mode == "EdgeBoxes") {
-		std::string model = "model.yml.gz";
-		img.convertTo(img, cv::DataType<float>::type, 1 / 255.0);
-		cv::Mat edges(img.size(), img.type());
-		std::vector<cv::Rect> rects;
-
-		// Edges detection
-		cv::Ptr<cv::ximgproc::StructuredEdgeDetection> edge_detection = 
-			cv::ximgproc::createStructuredEdgeDetection(model);
-		edge_detection->detectEdges(img, edges);
-		
-		// Computation of orientation from edge map
-		cv::Mat orimap;
-		edge_detection->computeOrientation(edges, orimap);
-
-		// Edge Boxes
-		const int MAX_NUM_PROPOSES = 30;
-		cv::Ptr< cv::ximgproc::EdgeBoxes > edge_boxes = cv::ximgproc::createEdgeBoxes();
-		edge_boxes->setMaxBoxes(MAX_NUM_PROPOSES);
-		edge_boxes->getBoundingBoxes(edges, orimap, rects);
-
-		return changing_coordinates(rects);
-	}
-	else if (mode == "EdgeBoxes_custom") {
-		std::string model = "model.yml.gz";
-		std::vector<cv::Rect> rects;
-
-		// Edges detection
-		cv::Ptr<cv::ximgproc::StructuredEdgeDetection> edge_detection =
-			cv::ximgproc::createStructuredEdgeDetection(model);
-
-		// Computation of orientation from edge map
-		cv::Mat orimap;
-		edge_detection->computeOrientation(custom_edges, orimap);
-
-		// Edge Boxes
-		const int MAX_NUM_PROPOSES = 30;
-		cv::Ptr< cv::ximgproc::EdgeBoxes > edge_boxes = cv::ximgproc::createEdgeBoxes();
-		edge_boxes->setMaxBoxes(MAX_NUM_PROPOSES);
-		edge_boxes->getBoundingBoxes(custom_edges, orimap, rects);
-
-		return changing_coordinates(rects);
-	}
-	else if (mode == "Selective_search_quality") {
+	
+	int d = 15;
+	int	sigmaColor = 5000;
+	int	sigmaSpace = 1500;
+	cv::Mat blur_img, blur_img2, rgb_image;
+	cv::cvtColor(img, rgb_image, cv::COLOR_BGR2RGB);
+	cv::medianBlur(rgb_image, blur_img, 15);
+	cv::bilateralFilter(blur_img, blur_img2, d, sigmaColor, sigmaSpace);
+	
+	if (mode == "Selective_search_quality") {
 		// Initial set up of the algorithm
 		cv::Ptr<cv::ximgproc::segmentation::SelectiveSearchSegmentation> ss = 
 			cv::ximgproc::segmentation::createSelectiveSearchSegmentation();
-		ss->setBaseImage(img);
+		ss->setBaseImage(blur_img2);
 		ss->switchToSelectiveSearchQuality();
 
 		// run selective search segmentation on given image
@@ -76,7 +40,8 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode, c
 		// Initial set up of the algorithm
 		cv::Ptr<cv::ximgproc::segmentation::SelectiveSearchSegmentation> ss = 
 			cv::ximgproc::segmentation::createSelectiveSearchSegmentation();
-		ss->setBaseImage(img);
+
+		ss->setBaseImage(blur_img2);
 		ss->switchToSelectiveSearchFast();
 
 		// run selective search segmentation on given image
