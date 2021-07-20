@@ -15,6 +15,7 @@ BoatDetector::BoatDetector() {
 
 void BoatDetector::set_image(cv::Mat image) {
 	img = image.clone();
+	comparison = image.clone();
 }
 
 void BoatDetector::load_ground_truth(std::string path) {
@@ -41,7 +42,7 @@ void BoatDetector::load_ground_truth(std::string path) {
 			// Taking coordinates values
 			const char* c_token = token.c_str();
 			std::vector<std::string> segments = split(c_token, ';');
-			cv::Scalar box(stoi(segments.at(0)), stoi(segments.at(2)), 
+			cv::Scalar box(stoi(segments.at(0)), stoi(segments.at(2)),
 				stoi(segments.at(1)), stoi(segments.at(3)));
 
 			true_boxes.push_back(box);
@@ -87,6 +88,7 @@ float BoatDetector::iou(cv::Scalar boxA, cv::Scalar boxB) {
 
 	// Interseption over Union
 	float iou = area_i / float(area_A + area_B - area_i);
+
 	return iou;
 }
 
@@ -119,69 +121,62 @@ void BoatDetector::draw_box(cv::Mat image, cv::Rect box, cv::Scalar color, std::
 	cv::putText(image, text, cv::Point(x, y), cv::FONT_HERSHEY_SIMPLEX, 0.5, color, thickness);
 }
 
-void BoatDetector::SBS(std::vector<cv::Rect> boxes, std::vector<float> scores, 
-	std::vector<cv::Rect> &new_boxes, std::vector<float> &new_scores) {
 
-	// Area of each box
-	std::vector<float> areas;
-	for (int i = 0; i < boxes.size(); i++) {
-		cv::Rect b = boxes.at(i);
-		areas.push_back(b.height * b.width);
+cv::Mat BoatDetector::compare() {
+	
+	// Draw all true boxes
+	for (int i = 0; i < true_boxes.size(); i++) {
+		cv::Scalar box = true_boxes.at(i);
+		int thickness = 2;
+		cv::rectangle(comparison, cv::Point(box[0], box[1]), cv::Point(box[2], box[3]),
+			cv::Scalar(0, 0, 0), thickness);
 	}
-		
-	while (boxes.size() != 0) {
-		int m = argmax(areas);
-		cv::Rect M = boxes.at(m);
-
-		new_boxes.push_back(M);
-		boxes.erase(boxes.begin() + m);
-
-		new_scores.push_back(scores.at(m));
-		scores.erase(scores.begin() + m);
-		areas.erase(areas.begin() + m);
-
-		std::vector<cv::Rect> temp_boxes;
-		std::vector<float> temp_scores, temp_areas;
-		for (int i = 0; i < boxes.size(); i++) {
-			if (!inside(M, boxes.at(i))) {
-				temp_boxes.push_back(boxes.at(i));
-				temp_scores.push_back(scores.at(i));
-				temp_areas.push_back(areas.at(i));
-			}
+	
+	
+	// Compute IoU for each predicted box
+	std::vector<float> list_iou;
+	for (int i = 0; i < pred_boxes.size(); i++) {
+		float max = 0;
+		for (int j = 0; j < true_boxes.size(); j++) {
+			float local_iou = iou(pred_boxes.at(i), true_boxes.at(j));
+			if (local_iou > max) max = local_iou;
 		}
-		boxes = temp_boxes;
-		scores = temp_scores;
-		areas = temp_areas;
-
+		list_iou.push_back(max);
 	}
-}
 
-int BoatDetector::argmax(std::vector<float> A) {
-	int m = 0;
-	float max = A.at(m);
 
-	for (int i = 0; i < A.size(); i++) {
-		if (A.at(i) > max) {
-			m = i;
-			max = A.at(m);
+	// Draw all predicted boxes
+	for (int i = 0; i < pred_boxes.size(); i++) {
+		cv::Scalar box = pred_boxes.at(i);
+		int thickness = 2;
+		cv::Scalar color;
+
+		float local_iou = list_iou.at(i);
+		if (local_iou >= 0.9) {
+			color = cv::Scalar(0, 255, 0);       // green
 		}
+		else if (local_iou >= 0.7) {
+			color = cv::Scalar(59, 235, 255);    // yellow
+		}
+		else if (local_iou >= 0.5) {
+			color = cv::Scalar(3, 136, 252);     // orange
+		}
+		else {
+			color = cv::Scalar(0, 0, 255);       // red
+		}
+
+		cv::rectangle(comparison, cv::Point(box[0], box[1]), cv::Point(box[2], box[3]),
+			color, thickness);
+
+		int x = box[0];
+		int y = box[1];
+		if (y - 10 < 0) y += box[3] - 10;
+		char temp_s[10];
+		std::sprintf(temp_s, "%.2f%%", local_iou * 100);
+		std::string s = temp_s;
+
+		cv::putText(comparison, s, cv::Point(x, y), cv::FONT_HERSHEY_SIMPLEX, 0.5, color, thickness);
 	}
 
-	return m;
-}
-
-bool BoatDetector::inside(cv::Rect boxA, cv::Rect boxB) {
-	// box A is the LARGE BOX
-	// box B is the SMALLER BOX, eventually inside box A
-
-	bool first_condition = (boxB.x > boxA.x) && (boxB.y > boxA.y) 
-		&& (boxB.x + boxB.width < boxA.x + boxA.width) && (boxB.y + boxB.height < boxA.y + boxA.height);
-
-	bool second_condition = (boxB.x >= boxA.x) && (boxB.y >= boxA.y)
-		&& (boxB.x + boxB.width < boxA.x + boxA.width) && (boxB.y + boxB.height < boxA.y + boxA.height);
-
-	bool third_condition = (boxB.x > boxA.x) && (boxB.y > boxA.y)
-		&& (boxB.x + boxB.width <= boxA.x + boxA.width) && (boxB.y + boxB.height <= boxA.y + boxA.height);
-
-	return first_condition || second_condition || third_condition;
+	return comparison;
 }

@@ -18,6 +18,7 @@ cv::Mat BoatDetector::process() {
 
 	std::cout << "    --> number of regions: " << boxes.size() << std::endl;
 
+
 	// Check ratio of box proposed
 	std::vector<cv::Scalar> new_boxes;
 	for (int i = 0; i < boxes.size(); i++) {
@@ -72,21 +73,13 @@ cv::Mat BoatDetector::process() {
 
 	// Apply NMS as implemented in OpenCV
 	std::vector<int> indices_keept;
-	cv::dnn::NMSBoxes(boxes_rect, scores, 0.90, 0.01, indices_keept);
+	float th_score = 0.9975;
+	do {
+		cv::dnn::NMSBoxes(boxes_rect, scores, th_score, 0.01, indices_keept);
+		th_score -= 0.01;
+	} while (indices_keept.size() == 0 && th_score >= 0.7);
 
 
-
-	// *************** SBS (small box supression) *******************************
-	// It may happen that during the boats detection process when the algorithm
-	// is evaluating a large boat, that some details such as windows etc..
-	// are wrongly classified as boats, but not discarded with NMS, because too much
-	// small w.r.t. the whole boat. For reason there is small box supression such that
-	// if a small box is completly inside a bigger one, then it's removed.
-	// This reduce the number of false positive boxes.
-	// --------------
-	// In general:
-	// If a box B is completly inside a box A, then box B is discarded
-	std::cout << "Small box supression (SBS)" << std::endl;
 	std::vector<cv::Rect> temp_boxes_rect;
 	std::vector<float> temp_scores;
 	for (int i = 0; i < indices_keept.size(); i++) {
@@ -97,21 +90,19 @@ cv::Mat BoatDetector::process() {
 	boxes_rect = temp_boxes_rect;
 	scores = temp_scores;
 
-	std::vector<cv::Rect> sbs_boxes;
-	std::vector<float> sbs_scores;
-	SBS(boxes_rect, scores, sbs_boxes, sbs_scores);
-
-
 
 	// *************** Draw all remained bounding boxes with relative score ******
-	for (int i = 0; i < sbs_boxes.size(); i++) {
-		cv::Rect box = sbs_boxes.at(i);
+	for (int i = 0; i < boxes_rect.size(); i++) {
+		cv::Rect box = boxes_rect.at(i);
 		char temp_s[10];
-		std::sprintf(temp_s, "%.2f%%", sbs_scores.at(i) * 100);
+		std::sprintf(temp_s, "%.2f%%", scores.at(i) * 100);
 		std::string s = temp_s;
 
 		// Drawing box
 		draw_box(img, box, cv::Scalar(0, 255, 0), s);
+
+		// Store final result
+		pred_boxes.push_back(cv::Scalar(box.x, box.y, box.x + box.width, box.y + box.height));
 	}
 
 	return img;

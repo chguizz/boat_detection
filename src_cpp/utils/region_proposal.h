@@ -24,8 +24,7 @@ public:
 
 
 	// Regional proposal for object detection given an image
-	// the algorithm proposed are EdgeBoxes standard and with custom edge map
-	// and SelectiveSearch
+	// the algorithm proposed is SelectiveSearch in fast mode (default) or quality mode
 	// ---------------
 	// Parameters:
 	// 	   cv::Mat img                             image to process

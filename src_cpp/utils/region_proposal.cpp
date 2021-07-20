@@ -10,7 +10,7 @@ Regional proposal class
 #include "region_proposal.h"
 
 RegionProposal::RegionProposal() {
-	// intentionaly blank
+	// intentionally blank
 }
 
 std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode) {
@@ -23,6 +23,7 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode) {
 	cv::cvtColor(img, rgb_image, cv::COLOR_BGR2RGB);
 	cv::medianBlur(rgb_image, blur_img, 15);
 	cv::bilateralFilter(blur_img, blur_img2, d, sigmaColor, sigmaSpace);
+
 	
 	if (mode == "Selective_search_quality") {
 		// Initial set up of the algorithm
@@ -50,7 +51,7 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode) {
 		return changing_coordinates(rects);
 	}
 	else {
-		std::cout << "Error in the choice of the algorithm for regional proposal." << std::endl;
+		std::cout << "Error in the choice of the algorithm for regions proposal." << std::endl;
 		exit(-1);
 	}
 }

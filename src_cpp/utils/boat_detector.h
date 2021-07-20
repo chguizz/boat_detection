@@ -29,7 +29,7 @@ public:
 	void set_image(cv::Mat image);
 
 	// Load the ground truth bounding boxes
-	// Note: this method is specificaly thought for labels as in dataset at link:
+	// Note: this method is specificaly thought for labels (.txt file) as in dataset at link:
 	//		 https://drive.google.com/file/d/1XkVfXNjq_KMANKUBSlbpPrlMNe9cMhKk/view?usp=sharing
 	// ---------------------
 	// Parameters:
@@ -45,24 +45,38 @@ public:
 	std::vector<cv::Scalar> get_ground_truth();
 
 	// Process the image as proposed by the algorithm
-	// 1° step: object localization by regions proposal
+	// 1° step: object localization by regions proposal + check on the ratio
 	// 2° step: object classification by a chosen classifier
-	// 3° step: merge the previous results and apply Non Maxima Supression (NMS)
+	// 3° step: merge the previous results and apply Non Maximum Supression (NMS)
 	// 4° step: draw all remained bounding boxes with relative score
 	// ---------------------
 	// Returns:
 	//     cv::Mat final_image                 Final image with all bounding boxes and scores for relative objctes
 	cv::Mat process();
 
+	// Comparison of the predicted boxes with gorund truth
+	// Note: this method must be used after load_ground_truth() and process()
+	// ---------------------
+	// Returns:
+	//     cv::Mat comparison                  Image with predicted boxes compared with ground truth
+	//                                         The method show the percentage of IoU for each predicted box, 
+	//                                         colored in a scale from green (top quality) to yellow, orange and red (worst),
+	//                                         the ground truth boxes are in black.
+	cv::Mat compare();
+
 private:
-	// Image to process
-	cv::Mat img;
+	// Image to process 
+	// and image used to compare ground truth with predictions
+	cv::Mat img, comparison;
 
 	// Ground truth bounding boxes
 	std::vector<cv::Scalar> true_boxes;
 
-	// Proposed regions
+	// Proposed regions after region_proposal method
 	std::vector<cv::Scalar> boxes;
+
+	// Final predicted regions
+	std::vector<cv::Scalar> pred_boxes;
 
 	// Vector of scores for each proposed region
 	std::vector<float> scores;
@@ -102,38 +116,4 @@ private:
 	//     cv::Scalar color                     Color of the bounding box
 	//     std::string text                     Text to apply over the box (for example a score, probability etc..)
 	void draw_box(cv::Mat image, cv::Rect box, cv::Scalar color, std::string text);
-
-
-	// Small box suppression (SBS)
-	// It may happen that during the boats detection process when the algorithm
-	// is evaluating a large boat, that some details such as windows etc..
-	// are wrongly classified as boats, but not discarded with NMS, because too much
-	// small w.r.t. the whole boat. For reason there is small box supression such that
-	// if a small box is completly inside a bigger one, then it's removed.
-	// This reduce the number of false positive boxes.
-	// ---------------------
-	// Parameters:
-	//     std::vector<cv::Rect> boxes            Input bounding boxes
-	//     std::vector<float> scores              Input scores
-	//     std::vector<cv::Rect>& new_boxe        Output bounding boxes
-	//     std::vector<float>& new_scores         Output scores
-	void SBS(std::vector<cv::Rect> boxes, std::vector<float> scores,
-		std::vector<cv::Rect>& new_boxes, std::vector<float>& new_scores);
-
-	// Compute the argmax function given a vector of floating numbers
-	// ---------------------
-	// Parameters:
-	//     std::vector<float> A                    Input vector to scan
-	// Returns:
-	//     int index                               Index of the maximum value
-	int argmax(std::vector<float> A);
-
-	// Test to check when box B is completely inside box A
-	// ---------------------
-	// Parameters:
-	//     cv::Rect boxA                            Larger box
-	//     cv::Rect boxB                            Smaller box
-	// Returns:
-	//     bool result                              True if box B inside box A, false otherwise
-	bool inside(cv::Rect boxA, cv::Rect boxB);
 };
