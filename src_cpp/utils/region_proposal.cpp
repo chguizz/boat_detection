@@ -15,7 +15,8 @@ RegionProposal::RegionProposal() {
 
 std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode) {
 
-	
+	// To be consistent with the training of the CNN, the input image
+	// is converted from BGR to RGB
 	int d = 15;
 	int	sigmaColor = 5000;
 	int	sigmaSpace = 1500;
@@ -51,7 +52,7 @@ std::vector<cv::Scalar> RegionProposal::process(cv::Mat img, std::string mode) {
 		return changing_coordinates(rects);
 	}
 	else {
-		std::cout << "Error in the choice of the algorithm for regions proposal." << std::endl;
+		std::cerr << "Error in the choice of the algorithm for regions proposal." << std::endl;
 		exit(-1);
 	}
 }

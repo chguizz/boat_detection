@@ -24,7 +24,7 @@ public:
 
 
 	// Regional proposal for object detection given an image
-	// the algorithm proposed is SelectiveSearch in fast mode (default) or quality mode
+	// the algorithm proposed is Selective Search in fast mode (default) or quality mode
 	// ---------------
 	// Parameters:
 	// 	   cv::Mat img                             image to process

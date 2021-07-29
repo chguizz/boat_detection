@@ -16,10 +16,9 @@ cv::Mat BoatDetector::process() {
 	RegionProposal region_detector;
 	std::vector<cv::Scalar> boxes = region_detector.process(img, "Selective_search_fast");
 
-	std::cout << "    --> number of regions: " << boxes.size() << std::endl;
-
 
 	// Check ratio of box proposed
+	std::cout << "Check ratio" << std::endl;
 	std::vector<cv::Scalar> new_boxes;
 	for (int i = 0; i < boxes.size(); i++) {
 		cv::Scalar box = boxes.at(i);
@@ -37,10 +36,14 @@ cv::Mat BoatDetector::process() {
 	
 
 	// *************** Classification of bounding boxes ***********************
-	std::cout << "Classification" << std::endl;
 	// Loading a net
+	// Note: the file "frozen_graph.pb" is the one computed by the jupyter notebook 
+	//       in directory src_python
+	std::cout << "Classification" << std::endl;
 	cv::dnn::Net net = cv::dnn::readNetFromTensorflow("frozen_graph.pb");
 
+	// To be consistent with the training of the CNN, the input image
+	// is converted from BGR to RGB
 	cv::Mat rgb_img;
 	cv::cvtColor(img, rgb_img, cv::COLOR_BGR2RGB);
 	for (int i = 0; i < boxes.size(); i++) {
@@ -61,7 +64,6 @@ cv::Mat BoatDetector::process() {
 	
 	// *************** Non Maxima Supression (NMS) ******************************
 	std::cout << "Non Maxima Supression (NMS)" << std::endl;
-	
 	// Changing bounding boxes to have format [x, y, height, width]
 	std::vector<cv::Rect> boxes_rect;
 	for (int i = 0; i < boxes.size(); i++) {
