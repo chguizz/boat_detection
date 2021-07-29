@@ -4,3 +4,6 @@ dataset/
 src_cpp/build/
 
 report/figures/
+
+report/iou.xlsx
+report/fonti.docx
