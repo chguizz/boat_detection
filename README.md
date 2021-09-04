@@ -16,15 +16,15 @@ The main steps are:
     5. Each region proposal represent a patch from the original image that will be resized and classified thanks a CNN;  
     6. Apply Non-Maximum Suppression (NMS);  
     
-The final results are quite nice for some input images like:  
-<img src="report/figures/det_kaggle/02.jpg" style="width:33%">
-<img src="report/figures/my01.jpg" height="212">
-<img src="report/figures/det_kaggle/09.jpg" style="width:33%">   
+The final results are quite nice for some input images like: <br> 
+<img src="report/figures/det_kaggle/02.jpg" style="width:20%">
+<img src="report/figures/my01.jpg" height="128">
+<img src="report/figures/det_kaggle/09.jpg" style="width:20%">   
 
-while in photo with a complex background, the detection is more challenging:  
-<img src="report/figures/det_venice/09.jpg" style="width:33%">
-<img src="report/figures/det_venice/10.jpg" style="width:33%">
-<img src="report/figures/det_venice/11.jpg" style="width:33%">  
+while in photo with a complex background, the detection is more challenging: <br> 
+<img src="report/figures/det_venice/09.jpg" style="width:20%">
+<img src="report/figures/det_venice/10.jpg" style="width:20%">
+<img src="report/figures/det_venice/11.jpg" style="width:20%">  
 
 For further details look at the report: _'report/report_boat_detection.pdf'_
 
