@@ -18,7 +18,7 @@ The main steps are:
     
 The final results are quite nice for some input images like: <br> 
 <img src="report/figures/det_kaggle/02.jpg" style="width:20%">
-<img src="report/figures/my01.jpg" height="117">
+<img src="report/figures/my01.jpg" height="115">
 <img src="report/figures/det_kaggle/09.jpg" style="width:20%">   
 
 while in photo with a complex background, the detection is more challenging: <br> 
